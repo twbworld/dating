@@ -1,0 +1,54 @@
+name: main
+
+on:
+  workflow_dispatch: #github页面手动触发
+  push: #push即触发
+    tags:
+      - "v*.*"
+jobs:
+
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tags: ${{ steps.extract-metadata.outputs.tags }}
+      image-labels: ${{ steps.extract-metadata.outputs.labels }}
+    steps:
+      - id: extract-repo-name
+        run: |
+          repo_name=""
+          if [ -n "$GITHUB_REPOSITORY" ]; then
+              repo_name=${GITHUB_REPOSITORY#*/}
+              repo_name=${repo_name#*/}
+              repo_name=${repo_name#*docker-}
+          fi
+          echo "repo-name=${repo_name}" >> $GITHUB_OUTPUT
+
+      - id: extract-metadata
+        if: steps.extract-repo-name.outputs.repo-name && vars.DOCKERHUB_USERNAME
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ vars.DOCKERHUB_USERNAME }}/${{ steps.extract-repo-name.outputs.repo-name }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.extract-repo-name.outputs.repo-name }}
+          #设置镜像tag
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+  push-images:
+    needs: [test, metadata]
+    if: needs.metadata.outputs.image-tags
+    uses: twbworld/proxy/.github/workflows/push-images.yaml@main
+    secrets: inherit #传递所有secrets, 被调用的不需要接收
+    with:
+      image-tags: ${{ needs.metadata.outputs.image-tags }}
+      image-labels: ${{ needs.metadata.outputs.image-labels }}
+      dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}

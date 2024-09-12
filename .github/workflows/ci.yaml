@@ -1,0 +1,39 @@
+name: ci
+on:
+  workflow_dispatch: #github页面手动触发
+  workflow_call: #允许其他workflow调用
+  push: #push即触发
+    branches: #只允许分支(branches)类型的push, 否则遇到tags类型的push,当前workflow也会生效
+      - '*'
+    paths-ignore: #不作为触发的文件
+      - '.*'
+      - 'LICENSE'
+      - 'Dockerfile'
+  pull_request:
+    branches:
+      - '*'
+    paths-ignore:
+      - '.*'
+      - 'LICENSE'
+      - 'README.md'
+
+jobs:
+
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  review:
+    needs: test
+    uses: twbworld/proxy/.github/workflows/review.yaml@main
+    secrets: inherit #传递所有secrets, 被调用的不需要接收
+
+
+  dependency-review:
+    if: github.base_ref != '' || github.head_ref != ''
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v3

@@ -1,0 +1,50 @@
+debug: false
+#本项目名称
+project_name: "我们何时见小程序api"
+#gin监听的地址
+gin_addr: ":80"
+#项目域名,端口默认80, webhook需要
+domain: "www.domain.com:80"
+# gin日志文件
+gin_log_path: "log/gin.log"
+# 运行日志文件
+run_log_path: "log/run.log"
+# 时区
+tz: "Asia/Shanghai"
+# jwt秘钥
+jwt_key: 123abc
+# 数据库配置
+database:
+  #数据库类型(sqlite|mysql); 小应用sqlite, 大应用mysql
+  type: sqlite
+  #sqlite文件路径
+  sqlite_path: "dating.db"
+  # mysql地址
+  mysql_host: ""
+  # mysql端口
+  mysql_port: 3306
+  # mysql数据库名
+  mysql_dbname: ""
+  # mysql用户名
+  mysql_username: ""
+  # mysql密码
+  mysql_password: ""
+# Telegram聊天室配置
+telegram:
+  # 聊天室token(BotFather创建)
+  token: "0123456789:AAxxxx"
+  # 用户id(userinfobot获取)
+  id: 123456789
+# 微信配置
+weixin:
+  # 小程序AppID
+  xcx_appid: wxxxxx
+  # 小程序secret
+  xcx_secret: wxxxxx
+  # 公众号AppID
+  gzh_appid: wxxxxx
+  # 公众号secret
+  gzh_secret: wxxxxx
+# 允许跨域的域名
+cors:
+  - "*"
