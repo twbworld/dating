@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.1
 
 require (
-	github.com/ArtisanCloud/PowerWeChat/v3 v3.2.43
+	github.com/ArtisanCloud/PowerWeChat/v3 v3.2.44
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0

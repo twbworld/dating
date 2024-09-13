@@ -43,6 +43,8 @@ func initializeGinServer() {
 	ginServer := gin.Default()
 	router.Start(ginServer)
 
+	ginServer.ForwardedByClientIP = true
+
 	// ginServer.Run(":80")
 	server = &http.Server{
 		Addr:    global.Config.GinAddr,

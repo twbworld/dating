@@ -5,6 +5,8 @@ project_name: "我们何时见小程序api"
 gin_addr: ":80"
 #项目域名,端口默认80, webhook需要
 domain: "www.domain.com:80"
+#放置静态文件的目录
+static_dir: "static"
 # gin日志文件
 gin_log_path: "log/gin.log"
 # 运行日志文件

@@ -106,11 +106,11 @@ func TestSpreadPeriodToHour(t *testing.T) {
 
 func TestReadyFile(t *testing.T) {
 	dir, file := ReadyFile(".txt")
-	assert.True(t, strings.HasPrefix(dir, "static"))
+	assert.True(t, strings.HasPrefix(dir, global.Config.StaticDir))
 	assert.True(t, strings.HasSuffix(file, ".txt"))
 	assert.Equal(t, 10, len(file)-len(".txt"))
 
 	dir, file = ReadyFile()
-	assert.True(t, strings.HasPrefix(dir, "static"))
+	assert.True(t, strings.HasPrefix(dir, global.Config.StaticDir))
 	assert.Equal(t, 10, len(file))
 }

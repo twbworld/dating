@@ -2,12 +2,13 @@ package utils
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"math"
-	"math/rand"
+	"math/big"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -202,5 +203,10 @@ func ReadyFile(fileExt ...string) (string, string) {
 		ext = fileExt[0]
 	}
 
-	return filepath.Join("static", time.Now().In(global.Tz).Format("2006/01/")), Hash(strconv.FormatInt(time.Now().UnixNano()+rand.Int63n(100), 10))[:10] + ext
+	n, err := rand.Int(rand.Reader, big.NewInt(100))
+	if err != nil {
+		return "", ""
+	}
+
+	return filepath.Join(global.Config.StaticDir, time.Now().In(global.Tz).Format("2006/01/")), Hash(strconv.FormatInt(time.Now().UnixNano()+n.Int64(), 10))[:10] + ext
 }

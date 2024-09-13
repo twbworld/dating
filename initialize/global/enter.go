@@ -3,12 +3,14 @@ package global
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
 	"github.com/twbworld/dating/global"
+	"github.com/twbworld/dating/model/config"
 )
 
 type GlobalInit struct {
@@ -46,11 +48,14 @@ func New(configFile ...string) *GlobalInit {
 				fmt.Println(err)
 			}
 		}
+		handleConfig(global.Config)
 	})
 	// 将配置赋值给全局变量(结构体需要设置mapstructure的tag)
 	if err := v.Unmarshal(global.Config); err != nil {
 		panic("出错[dhfal]: " + err.Error())
 	}
+
+	handleConfig(global.Config)
 
 	return &GlobalInit{}
 }
@@ -65,4 +70,8 @@ func (g *GlobalInit) Start() {
 	if err := g.initMiniProgram(); err != nil {
 		panic(err)
 	}
+}
+
+func handleConfig(c *config.Config) {
+	c.StaticDir = strings.TrimRight(c.StaticDir, "/")
 }

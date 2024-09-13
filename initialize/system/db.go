@@ -280,11 +280,8 @@ func insert(t string, tx *sqlx.Tx) error {
 		}
 	case db.File{}.TableName():
 		n := db.File{}.TableName()
-		if gin.Mode() == gin.TestMode {
-			sqls = []string{
-				fmt.Sprintf("INSERT INTO `%s`(`path`, `ext`, `add_time`) VALUES('static/favicon.ico', 'png', %d)", n, ti),
-			}
-		} else if gin.Mode() == gin.DebugMode {
+		sqls = []string{
+			fmt.Sprintf("INSERT INTO `%s`(`path`, `ext`, `add_time`) VALUES('%s/logo.png', 'png', %d)", n, global.Config.StaticDir, ti),
 		}
 	}
 

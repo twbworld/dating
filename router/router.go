@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/twbworld/dating/controller"
+	"github.com/twbworld/dating/global"
 	"github.com/twbworld/dating/middleware"
 	"github.com/twbworld/dating/model/common"
 
@@ -16,9 +17,10 @@ func Start(ginServer *gin.Engine) {
 
 	ginServer.Use(middleware.CorsHandle(), middleware.OptionsMethod) //全局中间件
 
-	ginServer.StaticFile("/favicon.ico", "static/favicon.ico")
-	ginServer.StaticFile("/robots.txt", "static/robots.txt")
-	ginServer.LoadHTMLGlob("static/*.html")
+	ginServer.StaticFile("/favicon.ico", global.Config.StaticDir + "/favicon.ico")
+	ginServer.StaticFile("/robots.txt", global.Config.StaticDir + "/robots.txt")
+	ginServer.LoadHTMLGlob(global.Config.StaticDir + "/*.html")
+	ginServer.StaticFS("/static", http.Dir(global.Config.StaticDir))
 
 	// 错误处理路由
 	errorRoutes := []string{"404.html", "40x.html", "50x.html"}
