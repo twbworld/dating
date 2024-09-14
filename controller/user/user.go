@@ -71,7 +71,7 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 	}
 
 	if data.NickName != "" {
-		if err := utils.WxCheckContent(u.OpenId, data.NickName); err != nil {
+		if utils.WxCheckContent(u.OpenId, data.NickName) != nil {
 			common.Fail(ctx, `昵称不合法, 申请重新授权`)
 			return
 		}

@@ -35,7 +35,7 @@ type Validator struct{}
 
 // 检验LoginPost参数
 func (v *Validator) ValidatorLoginPost(data *common.LoginPost) error {
-	if len(data.Code) < 5 {
+	if data.Code == "" || len(data.Code) < 5 {
 		return errors.New("参数错误[dotsd]")
 	}
 	return nil

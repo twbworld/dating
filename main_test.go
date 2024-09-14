@@ -57,11 +57,11 @@ func TestMain(t *testing.T) {
 		t.Fatal("[isoerji]", err)
 	}
 	// common.UserInfoPost
-	uploadBody3, contentType3, err := createForm("test2.png", map[string]string{"code": "aaaa", "nick_name": "测试"})
+	uploadBody3, contentType3, err := createForm("test2.png", map[string]string{"code": "aaaaaa", "nick_name": "测试"})
 	if err != nil {
 		t.Fatal("[isodfsdfji]", err)
 	}
-	uploadBody4, contentType4, err := createForm("test3.png", map[string]string{"code": "aaaa", "nick_name": "更名后"})
+	uploadBody4, contentType4, err := createForm("test3.png", map[string]string{"code": "aaaaaa", "nick_name": "更名后"})
 	if err != nil {
 		t.Fatal("[ishdfji]", err)
 	}
@@ -77,7 +77,7 @@ func TestMain(t *testing.T) {
 		{url: "/upload", postData: uploadBody, contentType: contentType},
 		{url: "/upload", postData: uploadBodyFail, contentType: contentTypeFail, res: common.Response{Code: 1}},
 		{url: "/login", postData: common.LoginPost{Code: ""}, res: common.Response{Code: 1}},
-		{url: "/login", postData: common.LoginPost{Code: "aaaa"}},
+		{url: "/login", postData: common.LoginPost{Code: "aaaaaa"}},
 		//插入后, userId=3
 		{url: "/userAdd", postData: uploadBody3, contentType: contentType3},
 		//插入已存在用户(不会新增用户)
@@ -148,7 +148,7 @@ func TestMain(t *testing.T) {
 	//非web请求的测试========================end
 
 	for k, value := range testCases {
-		t.Run(strconv.FormatInt(int64(k), 10)+value.url, func(t *testing.T) {
+		t.Run(strconv.FormatInt(int64(k+1), 10)+value.url, func(t *testing.T) {
 			if value.contentType == "" {
 				value.contentType = "application/json"
 			}

@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/miniProgram/auth/response"
+	"github.com/gin-gonic/gin"
 	"github.com/twbworld/dating/global"
 )
 
@@ -198,6 +199,9 @@ func AuthWxCode(code string) (rs *response.ResponseCode2Session, err error) {
 
 // 检查内容是否合法
 func WxCheckContent(openID string, content string) (err error) {
+	if gin.Mode() == gin.TestMode {
+		return nil
+	}
 	if _, err = os.Stat(content); err == nil {
 		rs, err := global.MiniProgramApp.Security.MediaCheckAsync(context.Background(), global.Config.Domain+"/"+content, 2, 2, openID, 1)
 		if err != nil {
