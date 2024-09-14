@@ -70,13 +70,13 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 		panic(err)
 	}
 
-	if data.NickName != "" {
+	if data.NickName == "" {
+		data.NickName = "微信用户"
+	} else if u.Id == 0 {
 		if utils.WxCheckContent(u.OpenId, data.NickName) != nil {
 			common.Fail(ctx, `昵称不合法, 申请重新授权`)
 			return
 		}
-	} else {
-		data.NickName = "微信用户"
 	}
 
 	if u.Id > 0 {

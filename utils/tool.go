@@ -202,6 +202,9 @@ func WxCheckContent(openID string, content string) (err error) {
 	if gin.Mode() == gin.TestMode {
 		return nil
 	}
+	if openID == "" || content == "" {
+		return errors.New("参数错误[oigfdhj]")
+	}
 	if _, err = os.Stat(content); err == nil {
 		rs, err := global.MiniProgramApp.Security.MediaCheckAsync(context.Background(), global.Config.Domain+"/"+content, 2, 2, openID, 1)
 		if err != nil {
