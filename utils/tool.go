@@ -196,6 +196,30 @@ func AuthWxCode(code string) (rs *response.ResponseCode2Session, err error) {
 	return
 }
 
+// 检查内容是否合法
+func WxCheckContent(openID string, content string) (err error) {
+	if _, err = os.Stat(content); err == nil {
+		rs, err := global.MiniProgramApp.Security.MediaCheckAsync(context.Background(), global.Config.Domain+"/"+content, 2, 2, openID, 1)
+		if err != nil {
+			return err
+		}
+		if rs.ErrCode != 0 {
+			return errors.New(rs.ErrMsg)
+		}
+		return err
+	} else {
+		rs, err := global.MiniProgramApp.Security.MsgSecCheck(context.Background(), openID, 1, 2, content, "", "", "")
+		if err != nil {
+			return err
+		}
+		if rs.Result.Suggest != "pass" {
+			return errors.New("内容不合法")
+		}
+
+		return err
+	}
+}
+
 // 生成文件路径和文件名
 func ReadyFile(fileExt ...string) (string, string) {
 	ext := ""

@@ -37,9 +37,6 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 
 	data.Code = ctx.DefaultPostForm("code", "")
 	data.NickName = strings.Trim(ctx.DefaultPostForm("nick_name", "微信用户"), " ")
-	if len(data.NickName) < 1 {
-		data.NickName = "微信用户"
-	}
 
 	if err := service.Service.UserServiceGroup.Validator.ValidatorUserAddPost(&data); err != nil {
 		common.Fail(ctx, err.Error())
@@ -71,6 +68,15 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 	// 用Code向微信换取用户信息
 	if err := service.Service.UserServiceGroup.DatingService.GetUserByCode(data.Code, &u); err != nil {
 		panic(err)
+	}
+
+	if data.NickName != "" {
+		if err := utils.WxCheckContent(u.OpenId, data.NickName); err != nil {
+			common.Fail(ctx, `昵称不合法, 申请重新授权`)
+			return
+		}
+	} else {
+		data.NickName = "微信用户"
 	}
 
 	if u.Id > 0 {

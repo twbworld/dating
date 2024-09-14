@@ -23,6 +23,7 @@ var fileExt []fc = []fc{
 	{"jpg", 2},
 	{"jpeg", 2},
 	{"png", 2},
+	{"bmp", 2},
 	{"gif", 2},
 	{"mp4", 32},
 	{"mov", 32},
@@ -34,7 +35,7 @@ type Validator struct{}
 
 // 检验LoginPost参数
 func (v *Validator) ValidatorLoginPost(data *common.LoginPost) error {
-	if len(data.Code) < 1 {
+	if len(data.Code) < 5 {
 		return errors.New("参数错误[dotsd]")
 	}
 	return nil
@@ -43,7 +44,7 @@ func (v *Validator) ValidatorLoginPost(data *common.LoginPost) error {
 // 检验UserAddPost参数
 func (v *Validator) ValidatorUserAddPost(data *common.UserInfoPost) error {
 	//nick_name可能为空, 不做判断
-	if len(data.Code) < 1 {
+	if data.Code == "" || len(data.Code) < 5 {
 		return errors.New("参数错误[dosfs0d]")
 	}
 	//判断文件是否存在

@@ -29,7 +29,7 @@ func tgStart() error {
 	}
 
 	if global.Config.Domain != "" {
-		wh, _ := tg.NewWebhook(fmt.Sprintf(`https://%s/wh/tg/%s`, global.Config.Domain, global.Bot.Token))
+		wh, _ := tg.NewWebhook(fmt.Sprintf(`%s/wh/tg/%s`, global.Config.Domain, global.Bot.Token))
 		if _, err = global.Bot.Request(wh); err != nil {
 			return fmt.Errorf("设置webhook失败: %w", err)
 		}
