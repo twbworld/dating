@@ -2,9 +2,10 @@ package user
 
 import (
 	"database/sql"
-	"fmt"
+	"mime/multipart"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +37,7 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 	}()
 
 	data.Code = ctx.DefaultPostForm("code", "")
-	data.NickName = strings.Trim(ctx.DefaultPostForm("nick_name", "微信用户"), " ")
+	data.NickName = strings.TrimSpace(ctx.DefaultPostForm("nick_name", "微信用户"))
 
 	if err := service.Service.UserServiceGroup.Validator.ValidatorUserAddPost(&data); err != nil {
 		common.Fail(ctx, err.Error())
@@ -188,14 +189,19 @@ func (b *UserApi) UserAdd(ctx *gin.Context) {
 
 // 用户反馈
 func (b *UserApi) Feedback(ctx *gin.Context) {
+
 	var (
-		data common.FeedbackPost
+		data     common.FeedbackPost
+		imgExist bool
+		fp       string
+		dir      string
+		file     *multipart.FileHeader
 	)
 
 	defer func() {
 		if p := recover(); p != nil {
 			global.Log.Errorln(p)
-			common.Fail(ctx, `系统错误[oin7ds]`)
+			common.Fail(ctx, `出错, 请重新授权[osdds]`)
 		}
 	}()
 
@@ -210,30 +216,101 @@ func (b *UserApi) Feedback(ctx *gin.Context) {
 		return
 	}
 
-	if ctx.ShouldBindJSON(&data) != nil {
-		common.Fail(ctx, `参数错误[dds6sj]`)
-		return
+	if ctx.ContentType() == "application/json" {
+		//没有图片的反馈
+		ctx.ShouldBindJSON(&data)
+	} else {
+		// 带图反馈
+		data.Desc = strings.TrimSpace(ctx.DefaultPostForm("desc", ""))
+		imgExist = true
 	}
+
 	if err := service.Service.UserServiceGroup.Validator.ValidatorFeedbackPost(&data); err != nil {
 		common.Fail(ctx, err.Error())
 		return
 	}
 
+	if imgExist {
+		var (
+			err error
+			f   string
+		)
+		file, err = ctx.FormFile("file")
+		if err != nil {
+			common.Fail(ctx, `参数错误[ipjdmk]`)
+			return
+		}
+
+		if err = service.Service.UserServiceGroup.Validator.ValidatorUpload(file); err != nil {
+			common.Fail(ctx, err.Error())
+			return
+		}
+		dir, f = utils.ReadyFile(path.Ext(file.Filename))
+		fp = dir + f
+		//判断新图片是否已存在数据库
+		id, err := dao.App.FileDb.GetFileId(fp)
+		if id > 0 {
+			common.Fail(ctx, `出错, 请重新上传[ddtyhkssj]`)
+			return
+		} else if err != nil && err != sql.ErrNoRows {
+			panic("系统出错[tweiosdf]")
+		}
+
+	}
+
 	err := dao.Tx(func(tx *sqlx.Tx) (e error) {
+		var fileId string
+		if imgExist {
+			fid, e := dao.App.FileDb.AddFile(&db.File{
+				Path: fp,
+				Ext:  strings.TrimLeft(filepath.Ext(fp), "."),
+			}, tx)
+			if e != nil {
+				panic("[gdf76f]" + e.Error())
+			}
+			fileId = strconv.Itoa(int(fid))
+		}
+
 		id, e := dao.App.FeedbackDb.AddFeedback(&db.Feedback{
 			Desc:   data.Desc,
 			UserId: userId,
+			FileId: fileId,
 		}, tx)
 		if id < 1 {
 			panic(`系统错误[ond0sm]`)
 		}
+
+		if imgExist {
+			//生成目录
+			if e = utils.Mkdir(dir); e != nil {
+				panic("[fjghfd]" + e.Error())
+			}
+			//保存头像
+			if e = ctx.SaveUploadedFile(file, fp); e != nil {
+				panic("[ddgf8]" + e.Error() + fp)
+			}
+
+		}
+
 		return
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	go service.Service.UserServiceGroup.TgService.TgSend(fmt.Sprintf("用户反馈通知:\n%s", data.Desc))
+	var str strings.Builder
+	str.WriteString("用户反馈通知:\n")
+	str.WriteString(data.Desc)
+	if imgExist {
+		str.WriteString("\n")
+		str.WriteString(`![](`)
+		str.WriteString(global.Config.Domain)
+		str.WriteString(`/`)
+		str.WriteString(fp)
+		str.WriteString(`)`)
+	}
+
+	go service.Service.UserServiceGroup.TgService.TgSend(str.String())
 
 	common.SuccessOk(ctx, `成功`)
 }

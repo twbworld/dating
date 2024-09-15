@@ -19,6 +19,7 @@ func (u *FeedbackDb) AddFeedback(f *db.Feedback, tx *sqlx.Tx) (uint, error) {
 	sql, args := utils.getInsertSql(f, map[string]interface{}{
 		"user_id":     f.UserId,
 		"desc":        f.Desc,
+		"file_id":     f.FileId,
 		"add_time":    currentTime,
 		"update_time": currentTime,
 	})

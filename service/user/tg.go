@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -25,7 +26,15 @@ func (t *TgService) TgSend(text string) (err error) {
 	lock.RLock()
 	defer lock.RUnlock()
 
-	msg := tg.NewMessage(global.Config.Telegram.Id, fmt.Sprintf("[%s]%s", global.Config.ProjectName, text))
+	var str strings.Builder
+	str.WriteString(`\[`)
+	str.WriteString(global.Config.ProjectName)
+	str.WriteString(`\]`)
+	str.WriteString(text)
+
+	msg := tg.NewMessage(global.Config.Telegram.Id, str.String())
+	msg.ParseMode = "MarkdownV2"
+
 	_, err = global.Bot.Send(msg)
 	return
 }

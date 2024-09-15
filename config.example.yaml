@@ -3,7 +3,7 @@ debug: false
 project_name: "我们何时见小程序api"
 #gin监听的地址
 gin_addr: ":80"
-#项目域名,端口默认80, webhook需要
+#访问项目的域名,端口默认80(如webhook所用)
 domain: "https://www.domain.com"
 #放置静态文件的目录
 static_dir: "static"

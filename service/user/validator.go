@@ -54,7 +54,7 @@ func (v *Validator) ValidatorUserAddPost(data *common.UserInfoPost) error {
 // 检验FeedbackPost参数
 func (v *Validator) ValidatorFeedbackPost(data *common.FeedbackPost) error {
 	if len(data.Desc) < 1 || utf8.RuneCountInString(data.Desc) > 100 {
-		return errors.New("参数错误[dofsd]")
+		return errors.New("请详细描述[dofsd]")
 	}
 	return nil
 }

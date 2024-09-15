@@ -65,6 +65,10 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		t.Fatal("[ishdfji]", err)
 	}
+	uploadBody5, contentType5, err := createForm("test4.png", map[string]string{"desc": "测试带图反馈"})
+	if err != nil {
+		t.Fatal("[is89dfji]", err)
+	}
 
 	//以下是有执行顺序的, 并且库提前有必要数据
 	testCases := [...]struct {
@@ -128,8 +132,11 @@ func TestMain(t *testing.T) {
 		{url: "/quitDating", postData: common.QuitDatingPost{UtId: 7}},
 		//关闭会面
 		{url: "/quitDating", postData: common.QuitDatingPost{Id: 2}},
+		//反馈
 		{url: "/feedback", postData: common.FeedbackPost{Desc: ""}, res: common.Response{Code: 1}},
-		{url: "/feedback", postData: common.FeedbackPost{Desc: "测试"}},
+		{url: "/feedback", postData: common.FeedbackPost{Desc: "测试纯文本反馈"}},
+		//带图反馈
+		{url: "/feedback", postData: uploadBody5, contentType: contentType5},
 	}
 
 	//非web请求的测试========================begin
