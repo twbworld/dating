@@ -37,7 +37,8 @@ func (d *DatingService) MatchGoroutine(datingId uint) {
 }
 
 // 匹配最合适的时间
-func (d *DatingService) Match(datingId uint) (res db.DatingResult, err error) {
+func (d *DatingService) Match(datingId uint) (res *db.DatingResult, err error) {
+	res = &db.DatingResult{}
 	if datingId < 1 {
 		return res, errors.New("[odhkjgo]")
 	}
@@ -64,12 +65,14 @@ func (d *DatingService) Match(datingId uint) (res db.DatingResult, err error) {
 	num := d.findMaxMatchingUsers(numTime, len(du))
 	//有1个以上有相同时间的用户数, 亦或者, 用户总数为1时, 能匹配结果; 否则匹配失败
 	if num > 1 || (duLen == 1 && num > 0) {
-		res.Date = d.SimplePeriod(numTime[num])
-		res.Res = num == duLen //能匹配最多的用户数==用户数, 证明所有用户都有共同的空闲时间, 匹配成功 !
+		if _, ok := numTime[num]; ok {
+			res.Date = numTime[num]
+			res.Res = num == duLen //能匹配最多的用户数==用户数, 证明所有用户都有共同的空闲时间, 匹配成功 !
+		}
 	}
 
 	err = dao.Tx(func(tx *sqlx.Tx) (e error) {
-		return dao.App.DatingDb.DatingUpdate(datingId, &res, tx)
+		return dao.App.DatingDb.DatingUpdate(datingId, res, tx)
 	})
 	if err != nil {
 		return res, fmt.Errorf("[563fsd]%s", err)

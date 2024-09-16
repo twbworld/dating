@@ -18,7 +18,7 @@ func (Dating) TableName() string {
 func (d *Dating) ResultUnmarshal() *DatingResult {
 	result := &DatingResult{
 		false,
-		[]string{},
+		[]int{},
 	}
 	if d.Result == "" {
 		return result
@@ -30,22 +30,22 @@ func (d *Dating) ResultUnmarshal() *DatingResult {
 
 	if res.Date == nil {
 		//避免转json后,属性为"null"
-		res.Date = make([]string, 0)
+		res.Date = make([]int, 0)
 	}
 	return &res
 }
 
 // Result的数据
 type DatingResult struct {
-	Res  bool     `json:"r" info:"匹配是否成功"`
-	Date []string `json:"d"`
+	Res  bool  `json:"r" info:"匹配是否成功"`
+	Date []int `json:"d" info:"建议时间, 放时间戳"`
 }
 
 // 结构体转json
 func (d *DatingResult) Marshal() string {
 	if d.Date == nil {
 		//避免转json后,属性为"null"
-		d.Date = make([]string, 0)
+		d.Date = make([]int, 0)
 	}
 
 	result, err := json.Marshal(d)

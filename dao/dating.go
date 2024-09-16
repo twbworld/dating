@@ -28,7 +28,7 @@ func (d *DatingDb) GetDating(dating *db.Dating, datingId uint, tx ...*sqlx.Tx) e
 	return DB.Get(dating, sql, datingId)
 }
 
-func (d *DatingDb) GetUserTime(userTime *db.UserTime, datingId uint, UserId uint, tx ...*sqlx.Tx) error {
+func (d *DatingDb) GetUserTime(userTime *db.UserTime, datingId, UserId uint, tx ...*sqlx.Tx) error {
 	sql := fmt.Sprintf("SELECT `id`, `dating_id`, `user_id` FROM `%s` WHERE `status` = 1 AND `dating_id` = ? AND `user_id` = ?", userTime.TableName())
 	if len(tx) > 0 && tx[0] != nil {
 		return tx[0].Get(userTime, sql, datingId, UserId)
@@ -60,7 +60,7 @@ func (d *DatingDb) GetDatingUsers(datingUsers *[]common.DatingUser, datingId uin
 	return DB.Select(datingUsers, sql, datingId)
 }
 
-func (d *DatingDb) GetDatingList(datingList *[]common.DatingList, userId uint, lastId uint, limit uint, tx ...*sqlx.Tx) error {
+func (d *DatingDb) GetDatingList(datingList *[]common.DatingList, userId, lastId, limit uint, tx ...*sqlx.Tx) error {
 	var sql string
 	if lastId < 1 {
 		sql = fmt.Sprintf("SELECT `d`.`id`, `d`.`create_user_id`, `d`.`status`,`ut`.`add_time`,`ut`.`id` AS ut_id FROM `%s` AS ut JOIN `%s` AS d ON `ut`.`dating_id` = `d`.`id` AND `ut`.`user_id` = ? AND `ut`.`status` = 1 ORDER BY `ut`.`id` DESC LIMIT ?", db.UserTime{}.TableName(), db.Dating{}.TableName())

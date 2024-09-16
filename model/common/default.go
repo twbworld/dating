@@ -6,15 +6,18 @@ import (
 )
 
 type DatingUser struct {
-	UtId         uint   `db:"ut_id" json:"ut_id"`
-	Info         string `db:"info" json:"-"`
-	Id           uint   `db:"id" json:"id"`
-	NickName     string `db:"nick_name" json:"nick_name"`
-	Path         string `db:"path" json:"avatar_url"`
-	InfoResponse struct {
-		InfoPost
-		TimeStr []string `json:"ts"`
-	} `json:"info"`
+	UtId         uint           `db:"ut_id" json:"ut_id"`
+	Info         string         `db:"info" json:"-"`
+	Id           uint           `db:"id" json:"id"`
+	NickName     string         `db:"nick_name" json:"nick_name"`
+	Path         string         `db:"path" json:"avatar_url"`
+	InfoResponse []InfoResponse `json:"info"`
+}
+
+type InfoResponse struct {
+	Tag  string    `json:"tag"`
+	Time [2]string `json:"t"`
+	Res  uint8     `json:"res"` //结果; 0:不匹配;1:完全匹配;2:部分匹配
 }
 
 type DatingUserJoin struct {

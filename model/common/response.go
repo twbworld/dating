@@ -73,3 +73,9 @@ type UserInfo struct {
 	db.User
 	AvatarUrl string `json:"avatar_url"`
 }
+
+// Result的数据
+type DatingResult struct {
+	Res  bool     `json:"r" info:"匹配是否成功"`
+	Date []string `json:"d"`
+}

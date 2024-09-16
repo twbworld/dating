@@ -103,7 +103,32 @@ func TestSpreadPeriodToHour(t *testing.T) {
 	expected := []int64{1700000000, 1700003600}
 	assert.Equal(t, expected, result)
 }
+func TestUnion(t *testing.T) {
+	// 测试整数切片
+	intSlice1 := []int{1, 2, 3, 4}
+	intSlice2 := []int{3, 4, 5, 6}
+	expectedIntResult := []int{3, 4}
+	assert.ElementsMatch(t, expectedIntResult, Union(intSlice1, intSlice2))
 
+	// 测试字符串切片
+	strSlice1 := []string{"a", "b", "c"}
+	strSlice2 := []string{"b", "c", "d"}
+	expectedStrResult := []string{"b", "c"}
+	assert.ElementsMatch(t, expectedStrResult, Union(strSlice1, strSlice2))
+
+	// 测试无交集的情况
+	noIntersectionSlice1 := []int{1, 2}
+	noIntersectionSlice2 := []int{3, 4}
+	expectedNoIntersectionResult := []int{}
+	assert.ElementsMatch(t, expectedNoIntersectionResult, Union(noIntersectionSlice1, noIntersectionSlice2))
+
+	// 测试空切片的情况
+	emptySlice := []int{}
+	expectedEmptyResult := []int{}
+	assert.ElementsMatch(t, expectedEmptyResult, Union(emptySlice, noIntersectionSlice2))
+	assert.ElementsMatch(t, expectedEmptyResult, Union(noIntersectionSlice1, emptySlice))
+	assert.ElementsMatch(t, expectedEmptyResult, Union(emptySlice, emptySlice))
+}
 func TestReadyFile(t *testing.T) {
 	dir, file := ReadyFile(".txt")
 	assert.True(t, strings.HasPrefix(dir, global.Config.StaticDir))

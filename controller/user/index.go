@@ -85,20 +85,32 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 		panic("参数错误[oi7ja]:")
 	}
 
+	dr := dating.ResultUnmarshal()
+
 	for key, value := range datingUsers {
 		if len(value.Info) < 1 {
 			continue
 		}
 		info := *value.InfoUnmarshal()
-		if info.Time == nil || len(info.Time) < 1 {
-			datingUsers[key].InfoResponse.TimeStr = make([]string, 0)
-			datingUsers[key].InfoResponse.Time = make([][2]string, 0)
+		if datingUsers[key].InfoResponse == nil {
+			datingUsers[key].InfoResponse = make([]common.InfoResponse, 0, len(info.Time))
 		}
 		for _, val := range info.Time {
-			t := service.Service.UserServiceGroup.DatingService.SimplePeriod(utils.SpreadPeriodToHour(int(val[0]), int(val[1])))
-			datingUsers[key].InfoResponse.TimeStr = append(datingUsers[key].InfoResponse.TimeStr, t[0])
-			datingUsers[key].InfoResponse.Time = append(datingUsers[key].InfoResponse.Time, [2]string{utils.TimeFormat(val[0]), utils.TimeFormat(val[1])})
-
+			tlist := utils.SpreadPeriodToHour(int(val[0]), int(val[1]))
+			res := uint8(0)
+			if union := utils.Union(dr.Date, tlist); len(union) > 0 {
+				if len(union) == len(tlist) {
+					res = 1
+				} else {
+					res = 2
+				}
+			}
+			t := service.Service.UserServiceGroup.DatingService.SimplePeriod(tlist)
+			datingUsers[key].InfoResponse = append(datingUsers[key].InfoResponse, common.InfoResponse{
+				Tag:  t[0],
+				Time: [2]string{utils.TimeFormat(val[0]), utils.TimeFormat(val[1])},
+				Res:  res,
+			})
 		}
 	}
 
@@ -107,7 +119,10 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 			"create_user_id": dating.CreateUserId,
 			"id":             dating.Id,
 			"status":         dating.Status,
-			"result":         dating.ResultUnmarshal(),
+			"result": common.DatingResult{
+				Res:  dr.Res,
+				Date: service.Service.UserServiceGroup.DatingService.SimplePeriod(dr.Date),
+			},
 		},
 		"users": datingUsers,
 	})

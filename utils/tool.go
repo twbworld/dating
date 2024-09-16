@@ -173,6 +173,31 @@ func SpreadPeriodToHour[T timeNumber](start, end T) []T {
 	return res
 }
 
+// 取两个切片的交集
+func Union[T string | Number](slice1, slice2 []T) []T {
+	// 创建一个空的哈希集合用于存储第一个切片的元素
+	set1 := make(map[T]struct{})
+	for _, elem := range slice1 {
+		set1[elem] = struct{}{}
+	}
+
+	// 创建一个空的哈希集合用于存储交集
+	intersectionSet := make(map[T]struct{})
+	for _, elem := range slice2 {
+		if _, exists := set1[elem]; exists {
+			intersectionSet[elem] = struct{}{}
+		}
+	}
+
+	// 将交集哈希集合中的所有元素转换为一个切片
+	result := make([]T, 0, len(intersectionSet))
+	for elem := range intersectionSet {
+		result = append(result, elem)
+	}
+
+	return result
+}
+
 // 用Code向微信官方换取openid等信息
 // 该函数可能会运行较慢
 func AuthWxCode(code string) (rs *response.ResponseCode2Session, err error) {
@@ -198,7 +223,7 @@ func AuthWxCode(code string) (rs *response.ResponseCode2Session, err error) {
 }
 
 // 检查内容是否合法
-func WxCheckContent(openID string, content string) (err error) {
+func WxCheckContent(openID, content string) (err error) {
 	if gin.Mode() == gin.TestMode {
 		return nil
 	}
