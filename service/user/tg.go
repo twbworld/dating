@@ -27,13 +27,13 @@ func (t *TgService) TgSend(text string) (err error) {
 	defer lock.RUnlock()
 
 	var str strings.Builder
-	str.WriteString(`\[`)
+	str.WriteString(`[`)
 	str.WriteString(global.Config.ProjectName)
-	str.WriteString(`\]`)
+	str.WriteString(`]`)
 	str.WriteString(text)
 
 	msg := tg.NewMessage(global.Config.Telegram.Id, str.String())
-	msg.ParseMode = "MarkdownV2"
+	// msg.ParseMode = "MarkdownV2" //使用Markdown格式, 需要对特殊字符进行转义
 
 	_, err = global.Bot.Send(msg)
 	return

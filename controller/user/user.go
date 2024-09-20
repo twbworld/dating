@@ -303,11 +303,9 @@ func (b *UserApi) Feedback(ctx *gin.Context) {
 	str.WriteString(data.Desc)
 	if imgExist {
 		str.WriteString("\n")
-		str.WriteString(`![](`)
 		str.WriteString(global.Config.Domain)
 		str.WriteString(`/`)
 		str.WriteString(fp)
-		str.WriteString(`)`)
 	}
 
 	go service.Service.UserServiceGroup.TgService.TgSend(str.String())
