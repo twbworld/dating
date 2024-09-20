@@ -264,5 +264,5 @@ func ReadyFile(fileExt ...string) (string, string) {
 		return "", ""
 	}
 
-	return filepath.Join(global.Config.StaticDir, time.Now().In(global.Tz).Format("2006/01/")), Hash(strconv.FormatInt(time.Now().UnixNano()+n.Int64(), 10))[:10] + ext
+	return filepath.Join(global.Config.StaticDir, time.Now().In(global.Tz).Format("2006/01/")) + "/", Hash(strconv.FormatInt(time.Now().UnixNano()+n.Int64(), 10))[:10] + ext
 }
