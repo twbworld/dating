@@ -16,13 +16,20 @@ import (
 type GlobalInit struct {
 }
 
+var Conf string
+
+func init() {
+	flag.StringVar(&Conf, "c", "", "choose config file.")
+}
+
 func New(configFile ...string) *GlobalInit {
 	var config string
 	if gin.Mode() != gin.TestMode {
-		//从命令参数获取配置路径
 		//避免 单元测试(go test)自动加参数, 导致flag报错
-		flag.StringVar(&config, "c", "", "choose config file.")
-		flag.Parse()
+		flag.Parse() //解析cli命令参数
+		if Conf != "" {
+			config = Conf
+		}
 	}
 	if config == "" && len(configFile) > 0 {
 		config = configFile[0]

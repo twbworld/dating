@@ -10,27 +10,34 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/twbworld/dating/dao"
+	"github.com/gin-gonic/gin"
 	"github.com/twbworld/dating/global"
-	initGlobal "github.com/twbworld/dating/initialize/global"
-	"github.com/twbworld/dating/initialize/system"
 	"github.com/twbworld/dating/router"
 	"github.com/twbworld/dating/service"
 	"github.com/twbworld/dating/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 var server *http.Server
 
-
-func initializeLogger() {
+func InitializeLogger() {
 	ginfile, err := os.OpenFile(global.Config.GinLogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		global.Log.Fatalf("打开文件错误[fsmk89]: %v", err)
 	}
 	gin.DefaultWriter, gin.DefaultErrorWriter = io.MultiWriter(ginfile), global.Log.Out //记录所有日志
 	gin.DisableConsoleColor()                                                           //将日志写入文件时不需要控制台颜色
+}
+
+func Start() {
+	initializeGinServer()
+	//协程启动服务
+	go startServer()
+
+	logStartupInfo()
+
+	service.Service.UserServiceGroup.TgService.TgSend("已启动")
+
+	waitForShutdown()
 }
 
 func initializeGinServer() {
@@ -50,37 +57,6 @@ func initializeGinServer() {
 		Addr:    global.Config.GinAddr,
 		Handler: ginServer,
 	}
-}
-
-func Start() {
-	initGlobal.New().Start()
-	initializeLogger()
-
-	defer func() {
-		if p := recover(); p != nil {
-			global.Log.Println(p)
-		}
-		if dao.DB != nil {
-			if err := dao.DB.Close(); err != nil {
-				global.Log.Println(`数据库关闭出错[joiasjofg]`, err)
-			}
-		}
-	}()
-
-	initializeGinServer()
-	s := system.Start()
-	defer s.Stop()
-	// service.Service.UserServiceGroup.DatingService.Match(4)
-
-	//协程启动服务
-	go startServer()
-
-	logStartupInfo()
-
-	service.Service.UserServiceGroup.TgService.TgSend("已启动")
-
-	waitForShutdown()
-
 }
 
 // 启动HTTP服务器

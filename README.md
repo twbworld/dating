@@ -17,7 +17,7 @@
 │   ├── enter.go
 │   └── user/           #前台api
 ├── dao/            #sql
-├── Dockerfile      #存放GitHub-Actions的工作流文件
+├── Dockerfile      #构建docker镜像
 ├── .editorconfig
 ├── .gitattributes
 ├── .github/
@@ -99,10 +99,10 @@ $ ./server -c config.yaml
 
 ## 展示
 
-![](https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409111424755.png)
-![](https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409111425133.png)
-![](https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409111425284.png)
-![](https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409111425518.png)
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351255.jpg" width="750px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351054.jpg" width="750px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222352393.jpg" width="750px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222353539.jpg" width="750px" />
 
 ## 计划中:
 
