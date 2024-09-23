@@ -13,8 +13,12 @@ import (
 func main() {
 	initGlobal.New().Start()
 	initialize.InitializeLogger()
-	sys := system.Start()
-	defer sys.Stop()
+	if err := system.DbStart(); err != nil {
+		global.Log.Fatalf("连接数据库失败[fbvk89]: %v", err)
+	}
+	defer system.DbClose()
+
+	// service.Service.UserServiceGroup.DatingService.Match(4)
 
 	defer func() {
 		if p := recover(); p != nil {
@@ -22,7 +26,6 @@ func main() {
 		}
 	}()
 
-	// service.Service.UserServiceGroup.DatingService.Match(4)
 	switch initGlobal.Act {
 	case "":
 		initialize.Start()

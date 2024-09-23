@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/twbworld/dating/global"
+	"github.com/twbworld/dating/initialize/system"
 	"github.com/twbworld/dating/router"
 	"github.com/twbworld/dating/service"
 	"github.com/twbworld/dating/utils"
@@ -29,6 +30,9 @@ func InitializeLogger() {
 }
 
 func Start() {
+	sys := system.Start()
+	defer sys.Stop()
+
 	initializeGinServer()
 	//协程启动服务
 	go startServer()
