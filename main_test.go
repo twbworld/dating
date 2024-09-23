@@ -72,15 +72,17 @@ func TestMain(t *testing.T) {
 
 	//以下是有执行顺序的, 并且库提前有必要数据
 	testCases := [...]struct {
+		method      string
+		postRes     common.Response
+		getRes      string
 		url         string
 		status      int
 		postData    interface{}
 		contentType string
-		res         common.Response
 	}{
 		{url: "/upload", postData: uploadBody, contentType: contentType},
-		{url: "/upload", postData: uploadBodyFail, contentType: contentTypeFail, res: common.Response{Code: 1}},
-		{url: "/login", postData: common.LoginPost{Code: ""}, res: common.Response{Code: 1}},
+		{url: "/upload", postData: uploadBodyFail, contentType: contentTypeFail, postRes: common.Response{Code: 1}},
+		{url: "/login", postData: common.LoginPost{Code: ""}, postRes: common.Response{Code: 1}},
 		{url: "/login", postData: common.LoginPost{Code: "aaaaaa"}},
 		//插入后, userId=3
 		{url: "/userAdd", postData: uploadBody3, contentType: contentType3},
@@ -101,7 +103,7 @@ func TestMain(t *testing.T) {
 				{ni.Format(time.DateOnly) + ` 9:00:00`, ni.Format(time.DateOnly) + ` 23:00:00`},
 				{time.Now().In(global.Tz).AddDate(0, 0, 5).Format(time.DateOnly) + ` 11:00:00`, time.Now().In(global.Tz).AddDate(0, 0, 5).Format(time.DateOnly) + ` 14:00:00`},
 			}},
-		}, res: common.Response{Code: 1}},
+		}, postRes: common.Response{Code: 1}},
 		//创建会面
 		{url: "/joinDating", postData: common.DatingPost{
 			Info: common.InfoPost{Time: [][2]string{
@@ -123,9 +125,9 @@ func TestMain(t *testing.T) {
 		{url: "/getDatingAmount", postData: ""},
 		//用UtId只能退出虚拟用户
 		//退出不属于自己的虚拟用户(失败)
-		{url: "/quitDating", postData: common.QuitDatingPost{UtId: 1}, res: common.Response{Code: 1}},
+		{url: "/quitDating", postData: common.QuitDatingPost{UtId: 1}, postRes: common.Response{Code: 1}},
 		//退出不存在会面(失败)
-		{url: "/quitDating", postData: common.QuitDatingPost{Id: 3}, res: common.Response{Code: 1}},
+		{url: "/quitDating", postData: common.QuitDatingPost{Id: 3}, postRes: common.Response{Code: 1}},
 		//退出会面
 		{url: "/quitDating", postData: common.QuitDatingPost{Id: 1}},
 		//退出虚拟用户
@@ -133,7 +135,7 @@ func TestMain(t *testing.T) {
 		//关闭会面
 		{url: "/quitDating", postData: common.QuitDatingPost{Id: 2}},
 		//反馈
-		{url: "/feedback", postData: common.FeedbackPost{Desc: ""}, res: common.Response{Code: 1}},
+		{url: "/feedback", postData: common.FeedbackPost{Desc: ""}, postRes: common.Response{Code: 1}},
 		{url: "/feedback", postData: common.FeedbackPost{Desc: "测试纯文本反馈"}},
 		//带图反馈
 		{url: "/feedback", postData: uploadBody5, contentType: contentType5},
@@ -156,36 +158,45 @@ func TestMain(t *testing.T) {
 
 	for k, value := range testCases {
 		t.Run(strconv.FormatInt(int64(k+1), 10)+value.url, func(t *testing.T) {
-			if value.contentType == "" {
-				value.contentType = "application/json"
+			if value.method == "" {
+				value.method = http.MethodPost
 			}
 			if value.status == 0 {
 				value.status = 200
 			}
-			if value.res == (common.Response{}) {
-				value.res.Code = 0
+			if value.method == http.MethodPost {
+				if value.contentType == "" {
+					value.contentType = "application/json"
+				}
+				if value.postRes == (common.Response{}) {
+					value.postRes.Code = 0
+				}
 			}
 
-			var requestBody *bytes.Buffer
-			if v, ok := value.postData.(*bytes.Buffer); ok {
-				requestBody = v
-			} else {
-				jsonVal, err := json.Marshal(value.postData)
-				if err != nil {
-					t.Fatal("json出错[godjg]", err)
+			requestBody := new(bytes.Buffer)
+			if value.postData != nil {
+				if v, ok := value.postData.(*bytes.Buffer); ok {
+					requestBody = v
+				} else {
+					jsonVal, err := json.Marshal(value.postData)
+					if err != nil {
+						t.Fatal("json出错[godjg]", err)
+					}
+					requestBody = bytes.NewBuffer(jsonVal)
 				}
-				requestBody = bytes.NewBuffer(jsonVal)
 			}
 
 			b := time.Now().UnixMilli()
 
 			//向注册的路有发起请求
-			req, err := http.NewRequest(http.MethodPost, value.url, requestBody)
+			req, err := http.NewRequest(value.method, value.url, requestBody)
 			if err != nil {
 				t.Fatal("请求出错[godkojg]", err)
 			}
 			req.Header.Set("Authorization", token)
-			req.Header.Set("content-type", value.contentType)
+			if value.method == http.MethodPost {
+				req.Header.Set("content-type", value.contentType)
+			}
 
 			res := httptest.NewRecorder() // 构造一个记录
 			ginServer.ServeHTTP(res, req) //模拟http服务处理请求
@@ -202,15 +213,19 @@ func TestMain(t *testing.T) {
 			}
 			defer result.Body.Close()
 
-			var response common.Response
-			if err := json.Unmarshal(body, &response); err != nil {
-				t.Fatal("返回错误", err, string(body))
+			switch value.method {
+			case http.MethodPost:
+				var response common.Response
+				if err := json.Unmarshal(body, &response); err != nil {
+					t.Fatal("返回错误", err, string(body))
+				}
+				assert.Equal(t, value.postRes.Code, response.Code)
+			case http.MethodGet:
+				assert.Contains(t, string(body), value.getRes)
 			}
 
 			// fmt.Println("request!!!!!!!!!!", string(jsonVal))
 			fmt.Println("response!!!!!!!!!!", string(body))
-
-			assert.Equal(t, value.res.Code, response.Code)
 
 			time.Sleep(time.Millisecond * 500) //!!!!!!!!!!!!!!!!!!
 
