@@ -16,10 +16,14 @@ import (
 type GlobalInit struct {
 }
 
-var Conf string
+var (
+	Conf string
+	Act  string
+)
 
 func init() {
 	flag.StringVar(&Conf, "c", "", "choose config file.")
+	flag.StringVar(&Act, "a", "", `行为,默认为空,即启动服务; "clear": 清除过期数据;`)
 }
 
 func New(configFile ...string) *GlobalInit {

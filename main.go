@@ -1,10 +1,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/twbworld/dating/global"
 	"github.com/twbworld/dating/initialize"
 	initGlobal "github.com/twbworld/dating/initialize/global"
 	"github.com/twbworld/dating/initialize/system"
+	"github.com/twbworld/dating/task"
 )
 
 func main() {
@@ -20,5 +23,13 @@ func main() {
 	}()
 
 	// service.Service.UserServiceGroup.DatingService.Match(4)
-	initialize.Start()
+	switch initGlobal.Act {
+	case "":
+		initialize.Start()
+	case "clear":
+		task.Clear()
+	default:
+		log.Println("参数可选: clear")
+	}
+
 }
