@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/twbworld/dating/global"
 	"github.com/twbworld/dating/initialize"
@@ -32,7 +32,7 @@ func main() {
 	case "clear":
 		task.Clear()
 	default:
-		log.Println("参数可选: clear")
+		fmt.Println("参数可选: clear|expiry")
 	}
 
 }
