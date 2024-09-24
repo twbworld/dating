@@ -99,10 +99,10 @@ $ ./server -c config.yaml
 
 ## 展示
 
-<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351255.jpg" width="750px" />
-<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351054.jpg" width="750px" />
-<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222352393.jpg" width="750px" />
-<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222353539.jpg" width="750px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351255.jpg" width="250px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222351054.jpg" width="250px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409222352393.jpg" width="250px" />
+<img src="https://cdn.jsdelivr.net/gh/twbworld/hosting@main/img/202409250129653.jpg" width="250px" />
 
 ## 计划中:
 
