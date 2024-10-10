@@ -58,6 +58,12 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 		return
 	}
 
+	userId := ctx.MustGet(`userId`).(uint)
+	if userId < 1 {
+		common.Fail(ctx, `系统错误[thojpi]`)
+		return
+	}
+
 	g, c := errgroup.WithContext(context.Background())
 	g.Go(func() error {
 		select {
@@ -83,6 +89,18 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 	})
 	if err = g.Wait(); err != nil {
 		panic("参数错误[oi7ja]:")
+	}
+
+	isset := false
+	for _, value := range datingUsers {
+		if value.Id == userId {
+			isset = true
+			break
+		}
+	}
+	if !isset {
+		common.Fail(ctx, `数据不存在[th7pi]`)
+		return
 	}
 
 	dr := dating.ResultUnmarshal()
