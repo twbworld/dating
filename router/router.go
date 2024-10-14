@@ -44,8 +44,9 @@ func Start(ginServer *gin.Engine) {
 	// 无需认证的路由
 	ginServer.POST("login", controller.Api.UserApiGroup.BaseApi.Login)
 	ginServer.POST("userAdd", controller.Api.UserApiGroup.UserApi.UserAdd)
+	ginServer.GET("getDatingWs", controller.Api.UserApiGroup.DatingApi.GetDatingWs)
 
-	auth := ginServer.Group("").Use(middleware.JWTAuth)
+	auth := ginServer.Group("").Use(middleware.Auth)
 	{
 		auth.POST("getDatingAmount", controller.Api.UserApiGroup.DatingApi.GetDatingAmount)
 		auth.POST("getDating", controller.Api.UserApiGroup.DatingApi.GetDating)

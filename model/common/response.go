@@ -30,9 +30,21 @@ func result(ctx *gin.Context, code int8, msg string, data interface{}) {
 	})
 }
 
+func resultWs(c chan *Response, code int8, msg string, data interface{}) {
+	c <- &Response{
+		Code: code,
+		Data: data,
+		Msg:  msg,
+	}
+}
+
 // 带data
 func Success(ctx *gin.Context, data interface{}) {
 	result(ctx, successCode, defaultSuccessMsg, data)
+}
+
+func SuccessWs(c chan *Response, data interface{}) {
+	resultWs(c, successCode, defaultSuccessMsg, data)
 }
 
 // 带msg,不带data
@@ -49,8 +61,21 @@ func SuccessAuth(ctx *gin.Context, token string, data interface{}) {
 	})
 }
 
+func SuccessAuthWs(c chan *Response, token string) {
+	c <- &Response{
+		Code:  successCode,
+		Data:  make(map[string]interface{}, 0),
+		Msg:   defaultSuccessMsg,
+		Token: token,
+	}
+}
+
 func Fail(ctx *gin.Context, message string) {
 	result(ctx, errorCode, message, map[string]interface{}{})
+}
+
+func FailWs(c chan *Response, message string) {
+	resultWs(c, errorCode, message, map[string]interface{}{})
 }
 
 func FailNotFound(ctx *gin.Context) {
@@ -67,6 +92,11 @@ func FailAuth(ctx *gin.Context, message string) {
 		Msg:  message,
 		Data: make(map[string]interface{}, 0),
 	})
+}
+
+// token过期
+func FailAuthWs(c chan *Response, message string) {
+	resultWs(c, authErrorCode, message, map[string]interface{}{})
 }
 
 type UserInfo struct {

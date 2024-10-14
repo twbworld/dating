@@ -19,7 +19,7 @@ const (
 	minTime, maxTime = 8, 23
 )
 
-func (d *DatingService) MatchGoroutine(datingId uint) {
+func (d *DatingService) MatchGoroutine(datingId uint, function ...func()) {
 	if datingId < 1 {
 		return
 	}
@@ -33,6 +33,13 @@ func (d *DatingService) MatchGoroutine(datingId uint) {
 		if _, err := d.Match(datingId); err != nil {
 			global.Log.Error("[gjs075]", datingId, err)
 		}
+
+		if len(function) > 0 {
+			for _, fc := range function {
+				fc()
+			}
+		}
+
 	}()
 }
 

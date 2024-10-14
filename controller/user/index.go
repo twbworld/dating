@@ -1,12 +1,10 @@
 package user
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/twbworld/dating/dao"
 	"github.com/twbworld/dating/global"
@@ -20,129 +18,28 @@ type DatingApi struct {
 }
 
 // 事务(用于执行service.Match())
-func (d *DatingApi) tx(datingId uint, fc func(tx *sqlx.Tx) error) (err error) {
+func (d *DatingApi) tx(datingId uint, fc func(tx *sqlx.Tx) error) error {
 
-	if err = dao.Tx(fc); err != nil {
-		return
+	if err := dao.Tx(fc); err != nil {
+		return err
 	}
 
-	service.Service.UserServiceGroup.DatingService.MatchGoroutine(datingId)
+	d.match(datingId)
 
-	return
+	return nil
 
 }
 
-// 获取会面详情
-func (d *DatingApi) GetDating(ctx *gin.Context) {
-	var (
-		data        common.GetDatingPost
-		datingUsers []common.DatingUser = make([]common.DatingUser, 0)
-		dating      db.Dating           = db.Dating{}
-		err         error
-	)
-
-	defer func() {
-		if p := recover(); p != nil {
-			global.Log.Errorln(p)
-			common.Fail(ctx, `系统错误[lksdfj]`)
-		}
-	}()
-
-	if ctx.ShouldBindJSON(&data) != nil {
-		common.Fail(ctx, `参数错误[j7n65]`)
-		return
-	}
-
-	if data.Id < 1 {
-		common.Fail(ctx, `参数错误[oihuiu]`)
-		return
-	}
-
-	userId := ctx.MustGet(`userId`).(uint)
-	if userId < 1 {
-		common.Fail(ctx, `系统错误[thojpi]`)
-		return
-	}
-
-	g, c := errgroup.WithContext(context.Background())
-	g.Go(func() error {
-		select {
-		case <-c.Done(): //发现其他goroutine报错,当前直接退出
-			return nil
-		default:
-			if err := dao.App.DatingDb.GetDating(&dating, data.Id); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	g.Go(func() error {
-		select {
-		case <-c.Done():
-			return nil
-		default:
-			if err = dao.App.DatingDb.GetDatingUsers(&datingUsers, data.Id); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err = g.Wait(); err != nil {
-		panic("参数错误[oi7ja]:")
-	}
-
-	isset := false
-	for _, value := range datingUsers {
-		if value.Id == userId {
-			isset = true
-			break
-		}
-	}
-	if !isset {
-		common.Fail(ctx, `数据不存在[th7pi]`)
-		return
-	}
-
-	dr := dating.ResultUnmarshal()
-
-	for key, value := range datingUsers {
-		if len(value.Info) < 1 {
-			continue
-		}
-		info := *value.InfoUnmarshal()
-		if datingUsers[key].InfoResponse == nil {
-			datingUsers[key].InfoResponse = make([]common.InfoResponse, 0, len(info.Time))
-		}
-		for _, val := range info.Time {
-			tlist := utils.SpreadPeriodToHour(int(val[0]), int(val[1]))
-			res := uint8(0)
-			if union := utils.Union(dr.Date, tlist); len(union) > 0 {
-				if len(union) == len(tlist) {
-					res = 1
-				} else {
-					res = 2
+func (d *DatingApi) match(datingId uint) {
+	service.Service.UserServiceGroup.DatingService.MatchGoroutine(datingId, func() {
+		if res, err := service.Service.UserServiceGroup.DatingService.GetDating(&common.GetDatingPost{Id: datingId}, 0); err == nil {
+			if clis, ok := cliData.list.Load(datingId); ok {
+				//广播
+				for cl := range clis.(map[*client]bool) {
+					common.SuccessWs(cl.send, res)
 				}
 			}
-			t := service.Service.UserServiceGroup.DatingService.SimplePeriod(tlist)
-			datingUsers[key].InfoResponse = append(datingUsers[key].InfoResponse, common.InfoResponse{
-				Tag:  t[0],
-				Time: [2]string{utils.TimeFormat(val[0]), utils.TimeFormat(val[1])},
-				Res:  res,
-			})
 		}
-	}
-
-	common.Success(ctx, gin.H{
-		"dating": gin.H{
-			"create_user_id": dating.CreateUserId,
-			"id":             dating.Id,
-			"status":         dating.Status,
-			"result": common.DatingResult{
-				Res:  dr.Res,
-				Date: service.Service.UserServiceGroup.DatingService.SimplePeriod(dr.Date),
-			},
-		},
-		"users": datingUsers,
 	})
 }
 
@@ -245,7 +142,7 @@ func (d *DatingApi) JoinDating(ctx *gin.Context) {
 		panic("[fioasj]" + err.Error())
 	}
 
-	service.Service.UserServiceGroup.DatingService.MatchGoroutine(dating.Id)
+	d.match(dating.Id)
 
 	common.Success(ctx, gin.H{
 		"id":    dating.Id,
