@@ -109,3 +109,16 @@ type DatingResult struct {
 	Res  bool     `json:"r" info:"匹配是否成功"`
 	Date []string `json:"d"`
 }
+
+type DatingSimple struct {
+	CreateUserId uint         `json:"create_user_id"`
+	Id           uint         `json:"id"`
+	Status       int8         `json:"status"`
+	Result       DatingResult `json:"result"`
+}
+
+// getDating数据
+type DatingInfo struct {
+	Dating DatingSimple `json:"dating"`
+	Users  []DatingUser `json:"users"`
+}

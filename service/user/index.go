@@ -69,15 +69,15 @@ func (d *DatingService) updateSessionKeyAsync(userID uint, newSessionKey string)
 }
 
 // 获取会面详情
-func (d *DatingService) GetDating(data *common.GetDatingPost, userId uint) (interface{}, error) {
+func (d *DatingService) GetDating(datingId uint) (*db.Dating, *common.DatingResult, []common.DatingUser, error) {
 	var (
 		datingUsers []common.DatingUser = make([]common.DatingUser, 0)
 		dating      db.Dating           = db.Dating{}
 		err         error
 	)
 
-	if data.Id < 1 {
-		return nil, errors.New("参数错误[oihuiu]")
+	if datingId == 0 {
+		return nil, nil, nil, errors.New("参数错误[oihuiu]")
 	}
 
 	g, c := errgroup.WithContext(context.Background())
@@ -86,7 +86,7 @@ func (d *DatingService) GetDating(data *common.GetDatingPost, userId uint) (inte
 		case <-c.Done(): //发现其他goroutine报错,当前直接退出
 			return nil
 		default:
-			if err := dao.App.DatingDb.GetDating(&dating, data.Id); err != nil {
+			if err := dao.App.DatingDb.GetDating(&dating, datingId); err != nil {
 				return err
 			}
 		}
@@ -97,27 +97,14 @@ func (d *DatingService) GetDating(data *common.GetDatingPost, userId uint) (inte
 		case <-c.Done():
 			return nil
 		default:
-			if err = dao.App.DatingDb.GetDatingUsers(&datingUsers, data.Id); err != nil {
+			if err = dao.App.DatingDb.GetDatingUsers(&datingUsers, datingId); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
 	if err = g.Wait(); err != nil {
-		return nil, errors.New("参数错误[oi7ja]")
-	}
-
-	if userId != 0 {
-		isset := false
-		for _, value := range datingUsers {
-			if value.Id == userId {
-				isset = true
-				break
-			}
-		}
-		if !isset {
-			return nil, errors.New("数据不存在[thhgi]")
-		}
+		return nil, nil, nil, errors.New("参数错误[oi7ja]")
 	}
 
 	dr := dating.ResultUnmarshal()
@@ -149,16 +136,8 @@ func (d *DatingService) GetDating(data *common.GetDatingPost, userId uint) (inte
 		}
 	}
 
-	return gin.H{
-		"dating": gin.H{
-			"create_user_id": dating.CreateUserId,
-			"id":             dating.Id,
-			"status":         dating.Status,
-			"result": common.DatingResult{
-				Res:  dr.Res,
-				Date: d.SimplePeriod(dr.Date),
-			},
-		},
-		"users": datingUsers,
-	}, nil
+	return &dating, &common.DatingResult{
+		Res:  dr.Res,
+		Date: d.SimplePeriod(dr.Date),
+	}, datingUsers, nil
 }

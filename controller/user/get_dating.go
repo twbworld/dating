@@ -124,12 +124,38 @@ func (c *client) readPump() {
 			continue
 		}
 
-		if res, err := service.Service.UserServiceGroup.DatingService.GetDating(&data, c.uId); err != nil {
-			common.FailWs(c.send, `参数错误[n7896b8]`)
-		} else {
-			updateClientList(data.Id, c, true)
-			common.SuccessWs(c.send, res)
+		da, dr, du, err := service.Service.UserServiceGroup.DatingService.GetDating(data.Id)
+		if err != nil {
+			common.FailWs(c.send, err.Error())
+			continue
 		}
+
+		isset := false
+		for _, value := range du {
+			if value.Id == c.uId {
+				isset = true
+				break
+			}
+		}
+		if !isset {
+			//用户不存在于会面
+			common.SuccessWs(c.send, &common.DatingInfo{
+				Dating: common.DatingSimple{Status: da.Status},
+				Users:  []common.DatingUser{},
+			})
+			continue
+		}
+
+		updateClientList(data.Id, c, true)
+		common.SuccessWs(c.send, &common.DatingInfo{
+			Dating: common.DatingSimple{
+				CreateUserId: da.CreateUserId,
+				Id:           da.Id,
+				Status:       da.Status,
+				Result:       *dr,
+			},
+			Users: du,
+		})
 	}
 }
 
@@ -175,9 +201,35 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 		return
 	}
 
-	if res, err := service.Service.UserServiceGroup.DatingService.GetDating(&data, userId); err != nil {
+	da, dr, du, err := service.Service.UserServiceGroup.DatingService.GetDating(data.Id)
+	if err != nil {
 		common.Fail(ctx, err.Error())
-	} else {
-		common.Success(ctx, res)
+		return
 	}
+
+	isset := false
+	for _, value := range du {
+		if value.Id == userId {
+			isset = true
+			break
+		}
+	}
+	if !isset {
+		//用户不存在于会面 或 已退出
+		common.Success(ctx, &common.DatingInfo{
+			Dating: common.DatingSimple{Status: da.Status},
+			Users:  []common.DatingUser{},
+		})
+		return
+	}
+
+	common.Success(ctx, &common.DatingInfo{
+		Dating: common.DatingSimple{
+			CreateUserId: da.CreateUserId,
+			Id:           da.Id,
+			Status:       da.Status,
+			Result:       *dr,
+		},
+		Users: du,
+	})
 }

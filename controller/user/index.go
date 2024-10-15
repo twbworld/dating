@@ -32,11 +32,23 @@ func (d *DatingApi) tx(datingId uint, fc func(tx *sqlx.Tx) error) error {
 
 func (d *DatingApi) match(datingId uint) {
 	service.Service.UserServiceGroup.DatingService.MatchGoroutine(datingId, func() {
-		if res, err := service.Service.UserServiceGroup.DatingService.GetDating(&common.GetDatingPost{Id: datingId}, 0); err == nil {
+		if _, ok := cliData.list.Load(datingId); !ok {
+			return
+		}
+		if da, dr, du, err := service.Service.UserServiceGroup.DatingService.GetDating(datingId); err == nil {
+			//这里懒得判断用户是否存在于会面了
 			if clis, ok := cliData.list.Load(datingId); ok {
 				//广播
 				for cl := range clis.(map[*client]bool) {
-					common.SuccessWs(cl.send, res)
+					common.SuccessWs(cl.send, &common.DatingInfo{
+						Dating: common.DatingSimple{
+							CreateUserId: da.CreateUserId,
+							Id:           da.Id,
+							Status:       da.Status,
+							Result:       *dr,
+						},
+						Users: du,
+					})
 				}
 			}
 		}
