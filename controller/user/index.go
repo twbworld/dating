@@ -27,7 +27,6 @@ func (d *DatingApi) tx(datingId uint, fc func(tx *sqlx.Tx) error) error {
 	d.match(datingId)
 
 	return nil
-
 }
 
 func (d *DatingApi) match(datingId uint) {
@@ -45,7 +44,7 @@ func (d *DatingApi) match(datingId uint) {
 							CreateUserId: da.CreateUserId,
 							Id:           da.Id,
 							Status:       da.Status,
-							Result:       *dr,
+							Result:       dr,
 						},
 						Users: du,
 					})

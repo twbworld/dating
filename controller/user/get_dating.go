@@ -35,14 +35,14 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-func updateClientList(datingId uint, cli *client, add bool) {
+func (c *client) updateClientList(datingId uint, add bool) {
 	if clis, ok := cliData.list.Load(datingId); ok {
 		clis := clis.(map[*client]bool)
 		if add {
-			clis[cli] = true
+			clis[c] = true
 			cliData.list.Store(datingId, clis)
 		} else {
-			delete(clis, cli)
+			delete(clis, c)
 			if len(clis) == 0 {
 				cliData.list.Delete(datingId)
 			} else {
@@ -50,7 +50,7 @@ func updateClientList(datingId uint, cli *client, add bool) {
 			}
 		}
 	} else if add {
-		cliData.list.Store(datingId, map[*client]bool{cli: true})
+		cliData.list.Store(datingId, map[*client]bool{c: true})
 	}
 }
 
@@ -83,7 +83,7 @@ func (c *client) readPump() {
 	defer func() {
 		c.close()
 		if data.Id != 0 {
-			updateClientList(data.Id, c, false)
+			c.updateClientList(data.Id, false)
 		}
 	}()
 
@@ -146,13 +146,13 @@ func (c *client) readPump() {
 			continue
 		}
 
-		updateClientList(data.Id, c, true)
+		c.updateClientList(data.Id, true)
 		common.SuccessWs(c.send, &common.DatingInfo{
 			Dating: common.DatingSimple{
 				CreateUserId: da.CreateUserId,
 				Id:           da.Id,
 				Status:       da.Status,
-				Result:       *dr,
+				Result:       dr,
 			},
 			Users: du,
 		})
@@ -228,7 +228,7 @@ func (d *DatingApi) GetDating(ctx *gin.Context) {
 			CreateUserId: da.CreateUserId,
 			Id:           da.Id,
 			Status:       da.Status,
-			Result:       *dr,
+			Result:       dr,
 		},
 		Users: du,
 	})

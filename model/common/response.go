@@ -111,10 +111,10 @@ type DatingResult struct {
 }
 
 type DatingSimple struct {
-	CreateUserId uint         `json:"create_user_id"`
-	Id           uint         `json:"id"`
-	Status       int8         `json:"status"`
-	Result       DatingResult `json:"result"`
+	CreateUserId uint          `json:"create_user_id"`
+	Id           uint          `json:"id"`
+	Status       int8          `json:"status"`
+	Result       *DatingResult `json:"result"`
 }
 
 // getDating数据
