@@ -131,6 +131,56 @@ func InSlice(slice []string, value string) int {
 	return -1
 }
 
+// 判断一个字符串是否包含多个子字符串中的任意一个
+func ContainsAny(str string, substrs []string) bool {
+	for _, substr := range substrs {
+		if strings.Contains(str, substr) {
+			return true
+		}
+	}
+	return false
+}
+
+// 取两个切片的交集
+func Union[T string | Number](slice1, slice2 []T) []T {
+	// 创建一个空的哈希集合用于存储第一个切片的元素
+	set1 := make(map[T]struct{})
+	for _, elem := range slice1 {
+		set1[elem] = struct{}{}
+	}
+
+	// 创建一个空的哈希集合用于存储交集
+	intersectionSet := make(map[T]struct{})
+	for _, elem := range slice2 {
+		if _, exists := set1[elem]; exists {
+			intersectionSet[elem] = struct{}{}
+		}
+	}
+
+	// 将交集哈希集合中的所有元素转换为一个切片
+	result := make([]T, 0, len(intersectionSet))
+	for elem := range intersectionSet {
+		result = append(result, elem)
+	}
+
+	return result
+}
+
+// 生成文件路径和文件名
+func ReadyFile(fileExt ...string) (string, string) {
+	ext := ""
+	if len(fileExt) > 0 {
+		ext = fileExt[0]
+	}
+
+	n, err := rand.Int(rand.Reader, big.NewInt(100))
+	if err != nil {
+		return "", ""
+	}
+
+	return filepath.Join(global.Config.StaticDir, time.Now().In(global.Tz).Format("2006/01/")) + "/", Hash(strconv.FormatInt(time.Now().UnixNano()+n.Int64(), 10))[:10] + ext
+}
+
 // 时间戳按日期分组; 例: {[1707100000,1707100000], [170720000]}
 func UnixGroup(times []int) [][]int {
 	if len(times) == 0 {
@@ -171,31 +221,6 @@ func SpreadPeriodToHour[T timeNumber](start, end T) []T {
 		start += add
 	}
 	return res
-}
-
-// 取两个切片的交集
-func Union[T string | Number](slice1, slice2 []T) []T {
-	// 创建一个空的哈希集合用于存储第一个切片的元素
-	set1 := make(map[T]struct{})
-	for _, elem := range slice1 {
-		set1[elem] = struct{}{}
-	}
-
-	// 创建一个空的哈希集合用于存储交集
-	intersectionSet := make(map[T]struct{})
-	for _, elem := range slice2 {
-		if _, exists := set1[elem]; exists {
-			intersectionSet[elem] = struct{}{}
-		}
-	}
-
-	// 将交集哈希集合中的所有元素转换为一个切片
-	result := make([]T, 0, len(intersectionSet))
-	for elem := range intersectionSet {
-		result = append(result, elem)
-	}
-
-	return result
 }
 
 // 用Code向微信官方换取openid等信息
@@ -250,19 +275,4 @@ func WxCheckContent(openID, content string) (err error) {
 
 		return err
 	}
-}
-
-// 生成文件路径和文件名
-func ReadyFile(fileExt ...string) (string, string) {
-	ext := ""
-	if len(fileExt) > 0 {
-		ext = fileExt[0]
-	}
-
-	n, err := rand.Int(rand.Reader, big.NewInt(100))
-	if err != nil {
-		return "", ""
-	}
-
-	return filepath.Join(global.Config.StaticDir, time.Now().In(global.Tz).Format("2006/01/")) + "/", Hash(strconv.FormatInt(time.Now().UnixNano()+n.Int64(), 10))[:10] + ext
 }

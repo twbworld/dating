@@ -1,13 +1,13 @@
 package config
 
 type Database struct {
-	Type          string `json:"type" mapstructure:"type" yaml:"type" env:"DB_TYPE"`
-	SqlitePath    string `json:"sqlite_path" mapstructure:"sqlite_path" yaml:"sqlite_path" env:"SQLITE_PATH"`
-	MysqlHost     string `json:"mysql_host" mapstructure:"mysql_host" yaml:"mysql_host" env:"MYSQL_HOST"`
-	MysqlPort     string `json:"mysql_port" mapstructure:"mysql_port" yaml:"mysql_port" env:"MYSQL_PORT"`
-	MysqlDbname   string `json:"mysql_dbname" mapstructure:"mysql_dbname" yaml:"mysql_dbname" env:"MYSQL_DBNAME"`
-	MysqlUsername string `json:"mysql_username" mapstructure:"mysql_username" yaml:"mysql_username" env:"MYSQL_USERNAME"`
-	MysqlPassword string `json:"mysql_password" mapstructure:"mysql_password" yaml:"mysql_password" env:"MYSQL_PASSWORD"`
+	Type          string `json:"type" mapstructure:"type" yaml:"type"`
+	SqlitePath    string `json:"sqlite_path" mapstructure:"sqlite_path" yaml:"sqlite_path"`
+	MysqlHost     string `json:"mysql_host" mapstructure:"mysql_host" yaml:"mysql_host"`
+	MysqlPort     string `json:"mysql_port" mapstructure:"mysql_port" yaml:"mysql_port"`
+	MysqlDbname   string `json:"mysql_dbname" mapstructure:"mysql_dbname" yaml:"mysql_dbname"`
+	MysqlUsername string `json:"mysql_username" mapstructure:"mysql_username" yaml:"mysql_username"`
+	MysqlPassword string `json:"mysql_password" mapstructure:"mysql_password" yaml:"mysql_password"`
 }
 
 type Telegram struct {

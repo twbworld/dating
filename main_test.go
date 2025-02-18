@@ -28,7 +28,7 @@ import (
 
 func TestMain(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	initGlobal.New().Start()
+	initGlobal.New("config.example.yaml").Start()
 	if err := system.DbStart(); err != nil {
 		t.Fatal("数据库连接失败[fsj09]", err)
 	}
